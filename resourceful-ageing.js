@@ -10,7 +10,7 @@
  */
 var polling_interval = 300000; //ms | NOTE: Interval for polling in periodic
 
-var SensorTag = require('sensortag');
+var SensorTag = require('./local_modules/sensortag');
 var async = require('async');
 var url = require('url');
 var macUtil = require('getmac');
@@ -123,6 +123,7 @@ var onDiscover = function(sensorTag) {
         sensorTag.enableBarometricPressure();
 
         // movement data
+        sensorTag.setMPU9250Period(100);
         sensorTag.enableAccelerometer();
         sensorTag.enableGyroscope();
         sensorTag.enableMagnetometer();
@@ -187,12 +188,7 @@ var onDiscover = function(sensorTag) {
             }
           };
           if (mqttService.getInstance().isConnected()) {
-            
-            //mqttService.getInstance().getClient().publishDeviceEvent("sensortag", "sensortag01", "status", "json", JSON.stringify(newData));
-            
-            mqttService.getInstance().getClient().publishDeviceEvent('sensortag',"pi01", "status","json",'{"d" : { "cpu" : 60, "mem" : 50 }}');
-  
-            //mqttService.getInstance().getClient().publish('iot-2/evt/air/fmt/json', JSON.stringify(newData), function() {});
+            mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'air', 'json', JSON.stringify(newData));
           }
         });
       }, polling_interval);

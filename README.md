@@ -18,5 +18,5 @@ nano config.properties
 ## Usage
 
 ```shell
-sudo node resourceful-ageing.js
+npm start
 ```
