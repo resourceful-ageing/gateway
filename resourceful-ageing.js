@@ -69,7 +69,7 @@ var mqttService = (function () {
           client.on("error", function (err) {
             console.log('IBM: ' + err);
             connected = false;
-            process.exit(1);
+            client.connect();
           });
         });
       });
