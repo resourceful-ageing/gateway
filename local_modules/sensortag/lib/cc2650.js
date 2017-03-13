@@ -105,7 +105,7 @@ CC2650SensorTag.prototype.setMPU9250Period = function(period, callback) {
 
 CC2650SensorTag.prototype.enableMPU9250 = function(mask, callback) {
   this.mpu9250mask |= mask;
-  this.writeUInt16LECharacteristic(MPU9250_UUID, MPU9250_CONFIG_UUID, 0x00Cf, callback);
+  this.writeUInt16LECharacteristic(MPU9250_UUID, MPU9250_CONFIG_UUID, 0x00Ff, callback);
 };
 
 CC2650SensorTag.prototype.disableMPU9250 = function(mask, callback) {
