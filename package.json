@@ -1,0 +1,16 @@
+{
+  "name": "resourceful-ageing",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "sensortag": "~1.3.0",
+    "async": "~2.1.5",
+    "url": "~0.11.0",
+    "getmac": "~1.2.1",
+    "properties": "~1.2.1",
+    "ibmiotf": "~0.2.32"
+  }
+}
