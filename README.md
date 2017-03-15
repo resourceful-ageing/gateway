@@ -20,3 +20,8 @@ nano config.properties
 ```shell
 npm start
 ```
+
+## Scripts
+```shell
+update.js
+```
