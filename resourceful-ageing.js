@@ -9,6 +9,7 @@
  *
  */
 
+var shell = require('shelljs');
 var exec = require('child_process').exec;
 var SensorTag = require('./local_modules/sensortag');
 var async = require('async');
@@ -67,19 +68,18 @@ var mqttService = (function () {
             connected = true;
 
             client.subscribeToGatewayCommand('reboot');
+	    client.subscribeToGatewayCommand('update');
           });
 
           client.on('command', function(type, id, commandName, commandFormat, payload, topic) {
 	    switch(commandName) {
               case 'reboot':
-		exec('reboot', function(error, stdout, stderr) {
-	          console.log('pull succeeded');
-		});
+		shell.exec('reboot');
 		break;
 	      case 'update':
-		exec('git pull', function(error, stdout, stderr) {
-                  console.log('GIT pull successful');
-		});
+		if (shell.exec('git pull').code === 0) {
+		  shell.exec('reboot');
+		}
 		break;
 	    }
           });
