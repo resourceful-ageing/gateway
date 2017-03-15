@@ -8,8 +8,8 @@
  * $ node multiple_sensortag.js
  *
  */
-var polling_interval = 300000; //ms | NOTE: Interval for polling in periodic
 
+var exec = require('child_process').exec;
 var SensorTag = require('./local_modules/sensortag');
 var async = require('async');
 var url = require('url');
@@ -17,6 +17,7 @@ var macUtil = require('getmac');
 var properties = require('properties');
 var ibmClient = require('ibmiotf');
 
+var polling_interval = 300000; //ms
 var device_timers = {}; // NOTE: Storage for setinterval objects
 
 var mqttService = (function () {
@@ -64,6 +65,23 @@ var mqttService = (function () {
           client.on('connect', function(){
             console.log('IBM: gateway client connected');
             connected = true;
+
+            client.subscribeToGatewayCommand('reboot');
+          });
+
+          client.on('command', function(type, id, commandName, commandFormat, payload, topic) {
+	    switch(commandName) {
+              case 'reboot':
+		exec('reboot', function(error, stdout, stderr) {
+	          console.log('pull succeeded');
+		});
+		break;
+	      case 'update':
+		exec('git pull', function(error, stdout, stderr) {
+                  console.log('GIT pull successful');
+		});
+		break;
+	    }
           });
           
           client.on("error", function (err) {
