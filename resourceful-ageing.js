@@ -78,7 +78,8 @@ var mqttService = (function () {
 		break;
 	      case 'update':
 		if (shell.exec('git pull').code === 0) {
-		  shell.exec('reboot');
+                  console.log('updated, send event');
+                  client.publishDeviceEvent("sensortag", deviceId, "gateway-updated", "json", {});
 		}
 		break;
 	    }
@@ -87,7 +88,8 @@ var mqttService = (function () {
           client.on("error", function (err) {
             console.log('IBM: ' + err);
             connected = false;
-            client.connect();
+            client.unsubscribeToGatewayCommand('reboot');
+            client.ubsubscribeToGatewayCommand('update');
           });
         });
       });
