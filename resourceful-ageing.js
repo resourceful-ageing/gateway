@@ -194,12 +194,10 @@ var onDiscover = function(sensorTag) {
             };
           }
         }, function(err, data) {
-          console.log(data.Info);
           //console.log(JSON.stringify(data));
           
           var newData = {
             "d": {
-              "id": data.Info.id,
               "rssi": data.Info.rssi,
               "pressure" : data.Barometer.pressure,
               "humidity" : data.Humidity.humidity,
@@ -207,6 +205,8 @@ var onDiscover = function(sensorTag) {
               "lux" : data.Luxometer.lux
             }
           };
+          console.log(newData);
+
           if (mqttService.getInstance().isConnected()) {
             mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'air', 'json', JSON.stringify(newData));
           }
