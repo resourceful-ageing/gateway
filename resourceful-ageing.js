@@ -89,9 +89,7 @@ var mqttService = (function () {
 	      case 'list-sensors':
 
 		  console.log('return list of sensors ('+Object.keys(devices).length+ ' connected devices)');
-console.log(JSON.stringify(devices));
 		  client.publishDeviceEvent("sensortag", deviceId, "sensors-listed", "json", { "devices": JSON.stringify(devices) });
-//                  client.publishGatewayEvent("status", "json", '{"d" : { "devices" : JSON.stringify(devices) }}');
 		break;
 	    }
           });
@@ -207,8 +205,7 @@ var onDiscover = function(sensorTag) {
             };
           }
         }, function(err, data) {
-          //console.log(JSON.stringify(data));
-          
+           
           var newData = {
             "d": {
               "rssi": data.Info.rssi,
@@ -227,12 +224,10 @@ var onDiscover = function(sensorTag) {
         });
       }, polling_interval);
 
-
       // NOTE: In case of listening for notification
 
       sensorTag.on('accelerometerChange', function(x, y, z) {
         if (x != 0 || y != 0 || z != 0) {
-          //console.log('accel (id:'+this.id+'x:' + x +", y:" + y + ", z:"+z+")" );
           var newData = {
             "d": {
               "x": x,
@@ -241,8 +236,6 @@ var onDiscover = function(sensorTag) {
             }
           };
           if (mqttService.getInstance().isConnected()) {
-//console.log(devices);
-//console.log(sensorTag.id);
             devices[sensorTag.id] = moment().unix();
             mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'accel', 'json', JSON.stringify(newData));
           }
@@ -250,7 +243,6 @@ var onDiscover = function(sensorTag) {
       });
       sensorTag.on('gyroscopeChange', function(x, y, z) {
         if (x != 0 || y != 0 || z != 0) {
-          //console.log('gyro  (x:' + x +", y:" + y + ", z:"+z+")" );
           var newData = {
             "d": {
               "x": x,
@@ -266,7 +258,6 @@ var onDiscover = function(sensorTag) {
       });
       sensorTag.on('magnetometerChange', function(x, y, z) {
         if (x != 0 || y != 0 || z != 0) {
-          //console.log('magne (x:' + x +", y:" + y + ", z:"+z+")" );
           var newData = {
             "d": {
               "x": x,
@@ -286,5 +277,3 @@ var onDiscover = function(sensorTag) {
 
 mqttService.getInstance().connect();
 SensorTag.discover(onDiscover);
-
-
