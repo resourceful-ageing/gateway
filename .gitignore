@@ -1,0 +1,4 @@
+node_modules/
+local_modules/sensortag/node_modules/
+npm-debug.log
+config.properties

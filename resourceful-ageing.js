@@ -17,9 +17,12 @@ var url = require('url');
 var macUtil = require('getmac');
 var properties = require('properties');
 var ibmClient = require('ibmiotf');
+var moment = require('moment-timezone');
+moment.tz.setDefault('Europe/Amsterdam');
 
 var polling_interval = 300000; //ms
 var device_timers = {}; // NOTE: Storage for setinterval objects
+var devices = {};
 
 var mqttService = (function () {
   var client;
@@ -67,20 +70,28 @@ var mqttService = (function () {
             console.log('IBM: gateway client connected');
             connected = true;
 
-            client.subscribeToGatewayCommand('reboot');
-	    client.subscribeToGatewayCommand('update');
+            client.subscribeToGatewayCommand('reboot-gateway');
+	    client.subscribeToGatewayCommand('update-gateway');
+            client.subscribeToGatewayCommand('list-sensors');
           });
 
           client.on('command', function(type, id, commandName, commandFormat, payload, topic) {
 	    switch(commandName) {
-              case 'reboot':
+              case 'reboot-gateway':
 		shell.exec('reboot');
 		break;
-	      case 'update':
+	      case 'update-gateway':
 		if (shell.exec('git pull').code === 0) {
                   console.log('updated, send event');
                   client.publishDeviceEvent("sensortag", deviceId, "gateway-updated", "json", {});
 		}
+		break;
+	      case 'list-sensors':
+
+		  console.log('return list of sensors ('+Object.keys(devices).length+ ' connected devices)');
+console.log(JSON.stringify(devices));
+		  client.publishDeviceEvent("sensortag", deviceId, "sensors-listed", "json", { "devices": JSON.stringify(devices) });
+//                  client.publishGatewayEvent("status", "json", '{"d" : { "devices" : JSON.stringify(devices) }}');
 		break;
 	    }
           });
@@ -89,7 +100,8 @@ var mqttService = (function () {
             console.log('IBM: ' + err);
             connected = false;
             client.unsubscribeToGatewayCommand('reboot');
-            client.ubsubscribeToGatewayCommand('update');
+            client.unsubscribeToGatewayCommand('update');
+            client.unsubscribeToGatewayCommand('list-sensors');
           });
         });
       });
@@ -122,12 +134,13 @@ var onDiscover = function(sensorTag) {
   sensorTag.once('disconnect', function() {
     clearInterval(device_timers[sensorTag.id]);
     delete(device_timers[sensorTag.id]);
-    console.info('Sensortag: ' + sensorTag.id, 'disconnected (' + (Object.keys(device_timers).length) + ' connected)');
+    delete(devices[sensorTag.id]);
+    console.info('Sensortag: ' + sensorTag.id + ' disconnected (' + Object.keys(devices).length + ' connected)');
   });
 
   async.series({
     connectAndSetUp: function(next) {
-      console.info('Sensortag: ' + sensorTag.id, 'discovered (' + (Object.keys(device_timers).length + 1) + ' connected)');
+      console.info('Sensortag: ' + sensorTag.id + ' discovered');
       sensorTag.connectAndSetUp(function() {
         SensorTag.discover(onDiscover); // NOTE: resume for discover other devices
         next();
@@ -155,8 +168,8 @@ var onDiscover = function(sensorTag) {
       } catch(ex) {
         // NOTE: Ignored because not supported
       }
-
-      console.info('Sensortag: ' + sensorTag.id, 'ready');
+      devices[sensorTag.id] = moment().unix();
+      console.info('Sensortag: ' + sensorTag.id + ' ready (' + Object.keys(devices).length + ' connected)');
       next();
     },
   }, function() {
@@ -206,6 +219,7 @@ var onDiscover = function(sensorTag) {
             }
           };
           console.log(newData);
+          devices[sensorTag.id] = moment().unix();
 
           if (mqttService.getInstance().isConnected()) {
             mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'air', 'json', JSON.stringify(newData));
@@ -227,6 +241,9 @@ var onDiscover = function(sensorTag) {
             }
           };
           if (mqttService.getInstance().isConnected()) {
+//console.log(devices);
+//console.log(sensorTag.id);
+            devices[sensorTag.id] = moment().unix();
             mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'accel', 'json', JSON.stringify(newData));
           }
         }
@@ -242,6 +259,7 @@ var onDiscover = function(sensorTag) {
             }
           };
           if (mqttService.getInstance().isConnected()) {
+            devices[sensorTag.id] = moment().unix();
             mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'gyro', 'json', JSON.stringify(newData));
           }
         }
@@ -257,6 +275,7 @@ var onDiscover = function(sensorTag) {
             }
           };
           if (mqttService.getInstance().isConnected()) {
+            devices[sensorTag.id] = moment().unix();
             mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'mag', 'json', JSON.stringify(newData));
           }
         }
@@ -267,4 +286,5 @@ var onDiscover = function(sensorTag) {
 
 mqttService.getInstance().connect();
 SensorTag.discover(onDiscover);
+
 
