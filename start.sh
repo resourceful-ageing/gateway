@@ -1,4 +1,4 @@
 #!/bin/bash
-npm install ~/resourceful-ageing/
-sudo forever --sourceDir ~/resourceful-ageing  start  resourceful-ageing.js
-#npm start ~/resourceful-ageing/
+npm install ~/gateway/
+sudo forever --sourceDir ~/gateway  start  gateway.js
+#npm start ~/gateway/
