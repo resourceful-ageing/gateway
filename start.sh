@@ -1,4 +1,3 @@
 #!/bin/bash
-npm install ~/gateway/
-sudo forever --sourceDir ~/gateway  start  gateway.js
-#npm start ~/gateway/
+npm install ~/resourceful-gateway/
+sudo forever --sourceDir ~/resourceful-gateway  start  gateway.js
