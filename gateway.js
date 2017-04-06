@@ -235,6 +235,9 @@ var onDiscover = function(sensorTag) {
               "z": z
             }
           };
+//console.log(sensorTag.id);
+console.log(newData);
+
           if (mqttService.getInstance().isConnected()) {
             devices[sensorTag.id] = moment().unix();
             mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'accel', 'json', JSON.stringify(newData));
