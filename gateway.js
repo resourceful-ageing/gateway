@@ -89,6 +89,7 @@ var mqttService = (function () {
 	      case 'list-sensors':
 
 		  console.log('return list of sensors ('+Object.keys(devices).length+ ' connected devices)');
+		  console.log(devices);
 		  client.publishDeviceEvent("sensortag", deviceId, "sensors-listed", "json", { "devices": JSON.stringify(devices) });
 		break;
 	    }
