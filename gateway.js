@@ -20,7 +20,7 @@ var ibmClient = require('ibmiotf');
 var moment = require('moment-timezone');
 moment.tz.setDefault('Europe/Amsterdam');
 
-var polling_interval = 300000; //ms
+var polling_interval = 60000; //ms
 var device_timers = {}; // NOTE: Storage for setinterval objects
 var devices = {};
 
@@ -155,7 +155,7 @@ var onDiscover = function(sensorTag) {
         sensorTag.enableBarometricPressure();
 
         // movement data
-        sensorTag.setMPU9250Period(100);
+        sensorTag.setMPU9250Period(200);
         sensorTag.enableAccelerometer();
         sensorTag.enableGyroscope();
         sensorTag.enableMagnetometer();
