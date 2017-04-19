@@ -81,7 +81,7 @@ var mqttService = (function () {
 		shell.exec('reboot');
 		break;
 	      case 'update-gateway':
-		if (shell.exec('git pull').code === 0) {
+		if (shell.exec('sudo git reset --hard').code === 0) {
                   console.log('updated, send event');
                   client.publishDeviceEvent("sensortag", deviceId, "gateway-updated", "json", {});
 		}
