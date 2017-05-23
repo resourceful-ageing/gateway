@@ -128,7 +128,7 @@ var onDiscover = function (sensorTag) {
     connectAndSetUp: function (next) {
       console.info('Sensortag: ' + sensorTag.id + ' discovered');
       sensorTag.connectAndSetUp(function () {
-        SensorTag.discover(onDiscover); // NOTE: resume for discover other devices
+        setTimeout(function() { SensorTag.discover(onDiscover); }, 2000); // NOTE: resume for discover other devices
         next();
       });
     },
