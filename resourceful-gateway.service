@@ -3,8 +3,9 @@ Description=resourceful-gateway
 
 [Service]
 WorkingDirectory=/home/pi/resourceful-gateway
-ExecStart=/home/pi/.nvm/v0.10.33/bin/npm start
-Restart=on-failure
+ExecStart=/usr/bin/timeout 10m /home/pi/.nvm/v0.10.33/bin/npm start
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

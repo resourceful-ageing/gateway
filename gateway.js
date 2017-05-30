@@ -128,10 +128,7 @@ var onDiscover = function (sensorTag) {
   async.series({
     connectAndSetUp: function (next) {
       console.info('Sensortag: ' + sensorTag.id + ' discovered');
-      sensorTag.connectAndSetUp(function () {
-        setTimeout(function () { SensorTag.discover(onDiscover); }, 2000); // NOTE: resume for discover other devices
-        next();
-      });
+      sensorTag.connectAndSetUp(next);
     },
     enableSensors: function (next) {
 
@@ -289,4 +286,8 @@ var onDiscover = function (sensorTag) {
 };
 
 mqttService.getInstance().connect();
-SensorTag.discover(onDiscover);
+
+setInterval(function () {
+  SensorTag.discover(onDiscover);
+}, 2000);
+
