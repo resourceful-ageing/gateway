@@ -1,5 +1,5 @@
 var shell = require('shelljs');
-var SensorTag = require('./local_modules/sensortag');
+var SensorTag = require('sensortag');
 var async = require('async');
 var macUtil = require('getmac');
 var properties = require('properties');
