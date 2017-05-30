@@ -1,3 +1,5 @@
+"use strict";
+
 var shell = require('shelljs');
 var SensorTag = require('sensortag');
 var async = require('async');
@@ -11,6 +13,9 @@ var polling_interval = 60000; // ms
 var movement_frequency = 200; // ms
 var device_timers = {}; // NOTE: Storage for setinterval objects
 var devices = {};
+
+// allow duplicates to enable reconnect
+SensorTag.SCAN_DUPLICATES = true;
 
 var mqttService = (function () {
   var client;
@@ -128,7 +133,10 @@ var onDiscover = function (sensorTag) {
   async.series({
     connectAndSetUp: function (next) {
       console.info('Sensortag: ' + sensorTag.id + ' discovered');
-      sensorTag.connectAndSetUp(next);
+      sensorTag.connectAndSetUp(function () {
+        setTimeout(function () { SensorTag.discover(onDiscover); }, 2000);
+        next();
+      });
     },
     enableSensors: function (next) {
 
@@ -286,8 +294,4 @@ var onDiscover = function (sensorTag) {
 };
 
 mqttService.getInstance().connect();
-
-setInterval(function () {
-  SensorTag.discover(onDiscover);
-}, 2000);
-
+SensorTag.discover(onDiscover);
