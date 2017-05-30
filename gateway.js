@@ -7,7 +7,8 @@ var ibmClient = require('ibmiotf');
 var moment = require('moment-timezone');
 moment.tz.setDefault('Europe/Amsterdam');
 
-var polling_interval = 60000; //ms
+var polling_interval = 60000; // ms
+var movement_frequency = 200; // ms
 var device_timers = {}; // NOTE: Storage for setinterval objects
 var devices = {};
 
@@ -128,7 +129,7 @@ var onDiscover = function (sensorTag) {
     connectAndSetUp: function (next) {
       console.info('Sensortag: ' + sensorTag.id + ' discovered');
       sensorTag.connectAndSetUp(function () {
-        setTimeout(function() { SensorTag.discover(onDiscover); }, 2000); // NOTE: resume for discover other devices
+        setTimeout(function () { SensorTag.discover(onDiscover); }, 2000); // NOTE: resume for discover other devices
         next();
       });
     },
@@ -142,7 +143,7 @@ var onDiscover = function (sensorTag) {
         sensorTag.enableBarometricPressure();
 
         // movement data
-        sensorTag.setMPU9250Period(200);
+        sensorTag.setMPU9250Period(movement_frequency);
         sensorTag.enableAccelerometer();
         sensorTag.enableGyroscope();
         sensorTag.enableMagnetometer();
@@ -151,11 +152,12 @@ var onDiscover = function (sensorTag) {
         sensorTag.notifyGyroscope();
         sensorTag.notifyMagnetometer();
 
+        devices[sensorTag.id] = moment().unix();
+        console.info('Sensortag: ' + sensorTag.id + ' ready (' + Object.keys(devices).length + ' connected)');
+
       } catch (ex) {
         // NOTE: Ignored because not supported
       }
-      devices[sensorTag.id] = moment().unix();
-      console.info('Sensortag: ' + sensorTag.id + ' ready (' + Object.keys(devices).length + ' connected)');
       next();
     },
   }, function () {
@@ -191,7 +193,25 @@ var onDiscover = function (sensorTag) {
           } catch (ex) {
             next(); // NOTE: Ignored because not supported
           };
+        },
+        Battery: function (next) {
+          try {
+            sensorTag.readBatteryLevel(function (error, batteryLevel) {
+              next(null, { battery: batteryLevel });
+            });
+          } catch (ex) {
+            next();
+          };
         }
+        //	  Io: function(next) {
+        //	    try {
+        //	      sensorTag.readIoConfig(function(error, value) {
+        //	        next(null, {io: value});
+        //	      });
+        //	    } catch(ex) {
+        //	      next();
+        //	    };
+        //	  }
       }, function (err, data) {
 
         var newData = {
@@ -200,7 +220,9 @@ var onDiscover = function (sensorTag) {
             "pressure": data.Barometer.pressure,
             "humidity": data.Humidity.humidity,
             "temperature": data.Humidity.temperature,
-            "lux": data.Luxometer.lux
+            "lux": data.Luxometer.lux,
+            "battery": data.Battery.battery
+            // "io": data.Io.io
           }
         };
         console.log(newData);
