@@ -20,3 +20,12 @@ nano config.properties
 ```shell
 npm start
 ```
+
+## Running as a systemd service
+
+```
+cp resourceful-gateway.service /etc/systemd/system/.
+systemctl enable resourceful-gateway.service
+systemctl start resourceful-gateway.service
+```
+
