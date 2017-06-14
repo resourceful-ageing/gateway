@@ -166,129 +166,131 @@ var onDiscover = function (sensorTag) {
       next();
     },
   }, function () {
-    // NOTE: In case of polling in periodic
-    device_timers[sensorTag.id] = setInterval(function () {
-      async.parallel({
-        Info: function (next) {
-          var info = { id: sensorTag.id, type: sensorTag.type };
-          sensorTag._peripheral.updateRssi(function (error, rssi) {
-            info.rssi = rssi;
-          });
-          next(null, info);
-        },
-        Humidity: function (next) {
-          sensorTag.readHumidity(function (error, temperature, humidity) {
-            next(null, { temperature: temperature, humidity: humidity });
-          });
-        },
-        Barometer: function (next) {
-          try {
-            sensorTag.readBarometricPressure(function (error, pressure) {
-              next(null, { pressure: pressure });
+    setTimeout(function () {
+      // NOTE: In case of polling in periodic
+      device_timers[sensorTag.id] = setInterval(function () {
+        async.parallel({
+          Info: function (next) {
+            var info = { id: sensorTag.id, type: sensorTag.type };
+            sensorTag._peripheral.updateRssi(function (error, rssi) {
+              info.rssi = rssi;
             });
-          } catch (ex) {
-            next(); // NOTE: Ignored because not supported
-          };
-        },
-        Luxometer: function (next) {
-          try {
-            sensorTag.readLuxometer(function (error, lux) {
-              next(null, { lux: lux });
+            next(null, info);
+          },
+          Humidity: function (next) {
+            sensorTag.readHumidity(function (error, temperature, humidity) {
+              next(null, { temperature: temperature, humidity: humidity });
             });
-          } catch (ex) {
-            next(); // NOTE: Ignored because not supported
-          };
-        },
-        Battery: function (next) {
-          try {
-            sensorTag.readBatteryLevel(function (error, batteryLevel) {
-              next(null, { battery: batteryLevel });
-            });
-          } catch (ex) {
-            next();
-          };
-        }
-        //	  Io: function(next) {
-        //	    try {
-        //	      sensorTag.readIoConfig(function(error, value) {
-        //	        next(null, {io: value});
-        //	      });
-        //	    } catch(ex) {
-        //	      next();
-        //	    };
-        //	  }
-      }, function (err, data) {
-
-        var newData = {
-          "d": {
-            "rssi": data.Info.rssi,
-            "pressure": data.Barometer.pressure,
-            "humidity": data.Humidity.humidity,
-            "temperature": data.Humidity.temperature,
-            "lux": data.Luxometer.lux,
-            "battery": data.Battery.battery
-            // "io": data.Io.io
+          },
+          Barometer: function (next) {
+            try {
+              sensorTag.readBarometricPressure(function (error, pressure) {
+                next(null, { pressure: pressure });
+              });
+            } catch (ex) {
+              next(); // NOTE: Ignored because not supported
+            };
+          },
+          Luxometer: function (next) {
+            try {
+              sensorTag.readLuxometer(function (error, lux) {
+                next(null, { lux: lux });
+              });
+            } catch (ex) {
+              next(); // NOTE: Ignored because not supported
+            };
+          },
+          Battery: function (next) {
+            try {
+              sensorTag.readBatteryLevel(function (error, batteryLevel) {
+                next(null, { battery: batteryLevel });
+              });
+            } catch (ex) {
+              next();
+            };
           }
-        };
-        console.log(newData);
-        devices[sensorTag.id] = moment().unix();
+          //	  Io: function(next) {
+          //	    try {
+          //	      sensorTag.readIoConfig(function(error, value) {
+          //	        next(null, {io: value});
+          //	      });
+          //	    } catch(ex) {
+          //	      next();
+          //	    };
+          //	  }
+        }, function (err, data) {
 
-        if (mqttService.getInstance().isConnected()) {
-          mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'air', 'json', JSON.stringify(newData));
+          var newData = {
+            "d": {
+              "rssi": data.Info.rssi,
+              "pressure": data.Barometer.pressure,
+              "humidity": data.Humidity.humidity,
+              "temperature": data.Humidity.temperature,
+              "lux": data.Luxometer.lux,
+              "battery": data.Battery.battery
+              // "io": data.Io.io
+            }
+          };
+          console.log(newData);
+          devices[sensorTag.id] = moment().unix();
+
+          if (mqttService.getInstance().isConnected()) {
+            mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'air', 'json', JSON.stringify(newData));
+          }
+        });
+      }, polling_interval);
+
+      // NOTE: In case of listening for notification
+
+      sensorTag.on('accelerometerChange', function (x, y, z) {
+        if (x != 0 || y != 0 || z != 0) {
+          var newData = {
+            "d": {
+              "x": x,
+              "y": y,
+              "z": z
+            }
+          };
+          //console.log(sensorTag.id);
+          console.log(newData);
+
+          if (mqttService.getInstance().isConnected()) {
+            devices[sensorTag.id] = moment().unix();
+            mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'accel', 'json', JSON.stringify(newData));
+          }
         }
       });
-    }, polling_interval);
-
-    // NOTE: In case of listening for notification
-
-    sensorTag.on('accelerometerChange', function (x, y, z) {
-      if (x != 0 || y != 0 || z != 0) {
-        var newData = {
-          "d": {
-            "x": x,
-            "y": y,
-            "z": z
+      sensorTag.on('gyroscopeChange', function (x, y, z) {
+        if (x != 0 || y != 0 || z != 0) {
+          var newData = {
+            "d": {
+              "x": x,
+              "y": y,
+              "z": z
+            }
+          };
+          if (mqttService.getInstance().isConnected()) {
+            devices[sensorTag.id] = moment().unix();
+            mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'gyro', 'json', JSON.stringify(newData));
           }
-        };
-        //console.log(sensorTag.id);
-        console.log(newData);
-
-        if (mqttService.getInstance().isConnected()) {
-          devices[sensorTag.id] = moment().unix();
-          mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'accel', 'json', JSON.stringify(newData));
         }
-      }
-    });
-    sensorTag.on('gyroscopeChange', function (x, y, z) {
-      if (x != 0 || y != 0 || z != 0) {
-        var newData = {
-          "d": {
-            "x": x,
-            "y": y,
-            "z": z
+      });
+      sensorTag.on('magnetometerChange', function (x, y, z) {
+        if (x != 0 || y != 0 || z != 0) {
+          var newData = {
+            "d": {
+              "x": x,
+              "y": y,
+              "z": z
+            }
+          };
+          if (mqttService.getInstance().isConnected()) {
+            devices[sensorTag.id] = moment().unix();
+            mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'mag', 'json', JSON.stringify(newData));
           }
-        };
-        if (mqttService.getInstance().isConnected()) {
-          devices[sensorTag.id] = moment().unix();
-          mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'gyro', 'json', JSON.stringify(newData));
         }
-      }
-    });
-    sensorTag.on('magnetometerChange', function (x, y, z) {
-      if (x != 0 || y != 0 || z != 0) {
-        var newData = {
-          "d": {
-            "x": x,
-            "y": y,
-            "z": z
-          }
-        };
-        if (mqttService.getInstance().isConnected()) {
-          devices[sensorTag.id] = moment().unix();
-          mqttService.getInstance().getClient().publishDeviceEvent('sensortag', sensorTag.id, 'mag', 'json', JSON.stringify(newData));
-        }
-      }
-    });
+      });
+    }, 10000)
   }
   );
 };
