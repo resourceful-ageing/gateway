@@ -6,14 +6,14 @@
     "start": "node gateway.js"
   },
   "dependencies": {
-    "async": "~2.1.5",
-    "url": "~0.11.0",
-    "getmac": "~1.2.1",
-    "properties": "~1.2.1",
-    "ibmiotf": "~0.2.32",
-    "bluetooth-hci-socket": "~0.5.1",
+    "async": "2.1.5",
+    "url": "0.11.0",
+    "getmac": "1.2.1",
+    "properties": "1.2.1",
+    "ibmiotf": "0.2.32",
+    "bluetooth-hci-socket": "0.5.1",
     "shelljs": "0.7.7",
-    "moment-timezone": "~0.5.11",
+    "moment-timezone": "0.5.11",
     "sensortag": "git://github.com/resourceful-ageing/node-sensortag.git#wake-on-motion"
   }
 }
