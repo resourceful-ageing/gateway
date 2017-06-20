@@ -290,7 +290,7 @@ var onDiscover = function (sensorTag) {
           }
         }
       });
-    }, 15000)
+    }, 15000);
   }
   );
 };
