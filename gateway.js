@@ -91,9 +91,6 @@ var mqttService = (function () {
           client.on("error", function (err) {
             console.log('IBM: ' + err);
             connected = false;
-            client.unsubscribeToGatewayCommand('reboot');
-            client.unsubscribeToGatewayCommand('update');
-            client.unsubscribeToGatewayCommand('list-sensors');
           });
         });
       });
