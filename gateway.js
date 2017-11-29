@@ -165,6 +165,16 @@ var onDiscover = function (sensorTag) {
   }, function () {
     setTimeout(function () {
       // NOTE: In case of polling in periodic
+      if(devices[sensorTag.id])
+      {
+		    //console.log('Device is present. We scan!');
+	    }
+	    else
+	    {
+		    console.log('Spurious timer! Device is not present. We do not scan!');
+		    return; //No device. It was disconnected in the timer
+	    }
+      
       device_timers[sensorTag.id] = setInterval(function () {
         async.parallel({
           Info: function (next) {
